@@ -1,4 +1,5 @@
-import { memo } from 'react';
+import { memo, useEffect, useState } from 'react';
+import { loadStrokeData, type CharacterStrokeData } from '../utils/strokes';
 
 interface TianzigeCellProps {
   size: number;
@@ -12,6 +13,16 @@ interface TianzigeCellProps {
 function TianzigeCellBase({ size, char, mode, showPinyin, pinyin, gridType = 'mizige' }: TianzigeCellProps) {
   const borderColor = '#c4a882';
   const guideColor = '#dbc8a8';
+  const [strokeData, setStrokeData] = useState<CharacterStrokeData | null>(null);
+
+  useEffect(() => {
+    if (!char || mode === 'blank') return;
+    let cancelled = false;
+    loadStrokeData(char).then((data) => {
+      if (!cancelled) setStrokeData(data);
+    });
+    return () => { cancelled = true; };
+  }, [char, mode]);
 
   return (
     <div className="relative flex flex-col items-center">
@@ -34,85 +45,75 @@ function TianzigeCellBase({ size, char, mode, showPinyin, pinyin, gridType = 'mi
       <svg
         width={size}
         height={size}
-        viewBox={`0 0 ${size} ${size}`}
+        viewBox="0 0 1024 1024"
         xmlns="http://www.w3.org/2000/svg"
       >
         {/* Outer border */}
         <rect
-          x={1}
-          y={1}
-          width={size - 2}
-          height={size - 2}
+          x={4}
+          y={4}
+          width={1016}
+          height={1016}
           fill="none"
           stroke={borderColor}
-          strokeWidth={1.5}
+          strokeWidth={8}
         />
 
         {/* Horizontal center line (dashed) */}
         <line
-          x1={1}
-          y1={size / 2}
-          x2={size - 1}
-          y2={size / 2}
+          x1={4}
+          y1={512}
+          x2={1020}
+          y2={512}
           stroke={guideColor}
-          strokeWidth={0.8}
-          strokeDasharray="4 3"
+          strokeWidth={4}
+          strokeDasharray="20 15"
         />
 
         {/* Vertical center line (dashed) */}
         <line
-          x1={size / 2}
-          y1={1}
-          x2={size / 2}
-          y2={size - 1}
+          x1={512}
+          y1={4}
+          x2={512}
+          y2={1020}
           stroke={guideColor}
-          strokeWidth={0.8}
-          strokeDasharray="4 3"
+          strokeWidth={4}
+          strokeDasharray="20 15"
         />
 
         {/* Diagonal lines (only for mizige) */}
         {gridType !== 'tianzige' && (
           <>
             <line
-              x1={1}
-              y1={1}
-              x2={size - 1}
-              y2={size - 1}
+              x1={4}
+              y1={4}
+              x2={1020}
+              y2={1020}
               stroke={guideColor}
-              strokeWidth={0.5}
-              strokeDasharray="4 4"
+              strokeWidth={3}
+              strokeDasharray="20 20"
               opacity={0.5}
             />
             <line
-              x1={size - 1}
-              y1={1}
-              x2={1}
-              y2={size - 1}
+              x1={1020}
+              y1={4}
+              x2={4}
+              y2={1020}
               stroke={guideColor}
-              strokeWidth={0.5}
-              strokeDasharray="4 4"
+              strokeWidth={3}
+              strokeDasharray="20 20"
               opacity={0.5}
             />
           </>
         )}
 
-        {/* Character */}
-        {char && mode !== 'blank' && (
-          <text
-            x={size / 2}
-            y={size / 2}
-            textAnchor="middle"
-            dominantBaseline="central"
-            style={{
-              fontFamily: "'LXGW WenKai', serif",
-              fontWeight: 700,
-              fontSize: size * 0.72,
-              fill: '#2c2018',
-              opacity: mode === 'reference' ? 1 : 0.15,
-            }}
-          >
-            {char}
-          </text>
+        {/* Character using stroke paths (same as StrokeOrderGuide) */}
+        {char && mode !== 'blank' && strokeData && (
+          <g transform="scale(1, -1) translate(0, -900)" opacity={mode === 'reference' ? 1 : 0.15}>
+            {strokeData.strokes.map((path, i) => (
+              <path key={i} d={path} fill="#2c2018" stroke="none" />
+            ))}
+          </g>
         )}
       </svg>
     </div>
