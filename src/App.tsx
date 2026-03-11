@@ -118,7 +118,7 @@ function App() {
 
       {/* Main content area */}
       <main
-        className="h-full overflow-y-auto overflow-x-hidden flex items-start justify-center p-6 lg:p-10"
+        className="h-full overflow-y-auto overflow-x-hidden flex flex-col"
         style={{
           marginLeft: sidebarOpen ? '20rem' : 0,
           transition: 'margin-left 0.3s ease',
@@ -129,28 +129,46 @@ function App() {
           `,
         }}
       >
-        {mode === 'learn' ? (
-          <LearnMode
-            text={text}
-            currentCharIndex={currentCharIndex}
-            onCharIndexChange={setCurrentCharIndex}
-            showPinyin={showPinyin}
-            gridType={gridType}
-            sidebarOpen={sidebarOpen}
-          />
-        ) : (
-          <WorksheetPreview
-            ref={previewRef}
-            text={text}
-            traceCells={traceCells}
-            blankCells={blankCells}
-            cellSize={cellSize}
-            showPinyin={showPinyin}
-            showStrokeOrder={showStrokeOrder}
-            maxStrokeFrames={maxStrokeFrames}
-            gridType={gridType}
-          />
-        )}
+        <div className="flex-1 flex items-start justify-center p-6 lg:p-10">
+          {mode === 'learn' ? (
+            <LearnMode
+              text={text}
+              currentCharIndex={currentCharIndex}
+              onCharIndexChange={setCurrentCharIndex}
+              showPinyin={showPinyin}
+              gridType={gridType}
+              sidebarOpen={sidebarOpen}
+            />
+          ) : (
+            <WorksheetPreview
+              ref={previewRef}
+              text={text}
+              traceCells={traceCells}
+              blankCells={blankCells}
+              cellSize={cellSize}
+              showPinyin={showPinyin}
+              showStrokeOrder={showStrokeOrder}
+              maxStrokeFrames={maxStrokeFrames}
+              gridType={gridType}
+            />
+          )}
+        </div>
+
+        {/* Footer */}
+        <footer
+          className="shrink-0 text-center py-3 text-xs"
+          style={{ color: 'var(--text-muted)', borderTop: '1px solid var(--ink-border)' }}
+        >
+          Stroke data powered by{' '}
+          <a
+            href="https://hanziwriter.org"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: 'var(--text-secondary)' }}
+          >
+            Hanzi Writer
+          </a>
+        </footer>
       </main>
     </div>
   );
