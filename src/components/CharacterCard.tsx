@@ -39,16 +39,21 @@ function CharacterCardBase({
     writer.showCharacter();
     writer.animateCharacter({
       onComplete: () => {
-        setPhase('quiz');
-        writer.hideCharacter();
-        writer.quiz({
-          showHintAfterMisses: 3,
-          onComplete: () => {
-            setTimeout(() => {
-              onQuizComplete();
-            }, 1000);
-          },
-        });
+        // Keep character visible for 1.5s, then start quiz
+        setTimeout(() => {
+          setPhase('quiz');
+          writer.hideCharacter();
+          writer.quiz({
+            showHintAfterMisses: 3,
+            onComplete: () => {
+              writer.showCharacter();
+              setPhase('watch');
+              setTimeout(() => {
+                onQuizComplete();
+              }, 1000);
+            },
+          });
+        }, 1500);
       },
     });
   }, [onQuizComplete]);
@@ -74,16 +79,21 @@ function CharacterCardBase({
 
     writer.animateCharacter({
       onComplete: () => {
-        setPhase('quiz');
-        writer.hideCharacter();
-        writer.quiz({
-          showHintAfterMisses: 3,
-          onComplete: () => {
-            setTimeout(() => {
-              onQuizComplete();
-            }, 1000);
-          },
-        });
+        // Keep character visible for 1.5s, then start quiz
+        setTimeout(() => {
+          setPhase('quiz');
+          writer.hideCharacter();
+          writer.quiz({
+            showHintAfterMisses: 3,
+            onComplete: () => {
+              writer.showCharacter();
+              setPhase('watch');
+              setTimeout(() => {
+                onQuizComplete();
+              }, 1000);
+            },
+          });
+        }, 1500);
       },
     });
 
