@@ -1,4 +1,6 @@
 interface SettingsPanelProps {
+  mode: 'worksheet' | 'learn';
+  onModeChange: (mode: 'worksheet' | 'learn') => void;
   text: string;
   onTextChange: (text: string) => void;
   traceCells: number;
@@ -102,6 +104,8 @@ function Toggle({
 }
 
 export function SettingsPanel({
+  mode,
+  onModeChange,
   text,
   onTextChange,
   traceCells,
@@ -155,6 +159,24 @@ export function SettingsPanel({
         </div>
       </div>
 
+      {/* Mode toggle */}
+      <div className="flex gap-2">
+        {(['worksheet', 'learn'] as const).map((m) => (
+          <button
+            key={m}
+            onClick={() => onModeChange(m)}
+            className="flex-1 py-1.5 rounded text-sm font-medium transition-colors cursor-pointer"
+            style={{
+              background: mode === m ? 'var(--ink-border-light)' : 'transparent',
+              border: `1px solid ${mode === m ? 'var(--vermillion)' : 'var(--ink-border)'}`,
+              color: mode === m ? 'var(--vermillion)' : 'var(--text-muted)',
+            }}
+          >
+            {m === 'worksheet' ? 'Worksheet' : 'Learn'}
+          </button>
+        ))}
+      </div>
+
       {/* Text input */}
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
@@ -186,18 +208,20 @@ export function SettingsPanel({
         />
       </div>
 
-      {/* Layout settings */}
-      <div className="flex flex-col gap-3">
-        <label className="text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
-          Layout
-        </label>
-        <NumberStepper label="Trace cells" value={traceCells} onChange={onTraceCellsChange} min={0} max={10} />
-        <NumberStepper label="Blank cells" value={blankCells} onChange={onBlankCellsChange} min={0} max={10} />
-        <NumberStepper label="Cell size" value={cellSize} onChange={onCellSizeChange} min={40} max={120} step={4} />
-        {showStrokeOrder && (
-          <NumberStepper label="Max stroke frames" value={maxStrokeFrames} onChange={onMaxStrokeFramesChange} min={4} max={12} />
-        )}
-      </div>
+      {/* Layout settings (worksheet only) */}
+      {mode === 'worksheet' && (
+        <div className="flex flex-col gap-3">
+          <label className="text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
+            Layout
+          </label>
+          <NumberStepper label="Trace cells" value={traceCells} onChange={onTraceCellsChange} min={0} max={10} />
+          <NumberStepper label="Blank cells" value={blankCells} onChange={onBlankCellsChange} min={0} max={10} />
+          <NumberStepper label="Cell size" value={cellSize} onChange={onCellSizeChange} min={40} max={120} step={4} />
+          {showStrokeOrder && (
+            <NumberStepper label="Max stroke frames" value={maxStrokeFrames} onChange={onMaxStrokeFramesChange} min={4} max={12} />
+          )}
+        </div>
+      )}
 
       {/* Display settings */}
       <div className="flex flex-col gap-3">
@@ -205,8 +229,14 @@ export function SettingsPanel({
           Display
         </label>
         <Toggle label="Show Pinyin" value={showPinyin} onChange={onShowPinyinChange} />
-        <Toggle label="Stroke Order" value={showStrokeOrder} onChange={onShowStrokeOrderChange} />
       </div>
+
+      {/* Stroke Order (worksheet only) */}
+      {mode === 'worksheet' && (
+        <div className="flex flex-col gap-3">
+          <Toggle label="Stroke Order" value={showStrokeOrder} onChange={onShowStrokeOrderChange} />
+        </div>
+      )}
 
       {/* Grid type */}
       <div className="flex flex-col gap-3">
@@ -231,52 +261,57 @@ export function SettingsPanel({
         </div>
       </div>
 
-      {/* Paper size */}
-      <div className="flex flex-col gap-3">
-        <label className="text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
-          Paper Size
-        </label>
-        <div className="flex gap-2">
-          {(['a4', 'letter'] as const).map((size) => (
-            <button
-              key={size}
-              onClick={() => onPaperSizeChange(size)}
-              className="flex-1 py-1.5 rounded text-sm font-medium transition-colors cursor-pointer"
-              style={{
-                background: paperSize === size ? 'var(--ink-border-light)' : 'transparent',
-                border: `1px solid ${paperSize === size ? 'var(--gold-accent)' : 'var(--ink-border)'}`,
-                color: paperSize === size ? 'var(--gold-accent)' : 'var(--text-muted)',
-              }}
-            >
-              {size.toUpperCase()}
-            </button>
-          ))}
+      {/* Paper size (worksheet only) */}
+      {mode === 'worksheet' && (
+        <div className="flex flex-col gap-3">
+          <label className="text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
+            Paper Size
+          </label>
+          <div className="flex gap-2">
+            {(['a4', 'letter'] as const).map((size) => (
+              <button
+                key={size}
+                onClick={() => onPaperSizeChange(size)}
+                className="flex-1 py-1.5 rounded text-sm font-medium transition-colors cursor-pointer"
+                style={{
+                  background: paperSize === size ? 'var(--ink-border-light)' : 'transparent',
+                  border: `1px solid ${paperSize === size ? 'var(--gold-accent)' : 'var(--ink-border)'}`,
+                  color: paperSize === size ? 'var(--gold-accent)' : 'var(--text-muted)',
+                }}
+              >
+                {size.toUpperCase()}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* Spacer */}
-      <div className="flex-1" />
+      {/* Spacer + Export button (worksheet only) */}
+      {mode === 'worksheet' && (
+        <>
+          <div className="flex-1" />
 
-      {/* Export button */}
-      <button
-        onClick={onExport}
-        disabled={isExporting || charCount === 0}
-        className="w-full py-3 rounded-lg text-sm font-semibold transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-        style={{
-          background: 'linear-gradient(135deg, var(--vermillion), #c03a2a)',
-          color: 'white',
-          border: 'none',
-          letterSpacing: '0.5px',
-        }}
-        onMouseEnter={(e) => {
-          if (!e.currentTarget.disabled) e.currentTarget.style.transform = 'translateY(-1px)';
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.transform = 'translateY(0)';
-        }}
-      >
-        {isExporting ? 'Generating PDF...' : 'Export PDF'}
-      </button>
+          <button
+            onClick={onExport}
+            disabled={isExporting || charCount === 0}
+            className="w-full py-3 rounded-lg text-sm font-semibold transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+            style={{
+              background: 'linear-gradient(135deg, var(--vermillion), #c03a2a)',
+              color: 'white',
+              border: 'none',
+              letterSpacing: '0.5px',
+            }}
+            onMouseEnter={(e) => {
+              if (!e.currentTarget.disabled) e.currentTarget.style.transform = 'translateY(-1px)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+            }}
+          >
+            {isExporting ? 'Generating PDF...' : 'Export PDF'}
+          </button>
+        </>
+      )}
     </aside>
   );
 }

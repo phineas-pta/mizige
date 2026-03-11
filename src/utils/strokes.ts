@@ -67,3 +67,13 @@ export function generateStrokeFrames(
 
   return frames;
 }
+
+export async function filterAvailableChars(chars: string[]): Promise<string[]> {
+  const results = await Promise.all(
+    chars.map(async (char) => {
+      const data = await loadStrokeData(char);
+      return data ? char : null;
+    })
+  );
+  return results.filter((c): c is string => c !== null);
+}

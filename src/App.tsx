@@ -1,4 +1,5 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { LearnMode } from './components/LearnMode';
 import { SettingsPanel } from './components/SettingsPanel';
 import { WorksheetPreview } from './components/WorksheetPreview';
 import { extractChineseChars } from './utils/pinyin';
@@ -15,10 +16,14 @@ function App() {
   const [gridType, setGridType] = useState<'mizige' | 'tianzige'>('mizige');
   const [paperSize, setPaperSize] = useState<'a4' | 'letter'>('a4');
   const [isExporting, setIsExporting] = useState(false);
+  const [mode, setMode] = useState<'worksheet' | 'learn'>('worksheet');
+  const [currentCharIndex, setCurrentCharIndex] = useState(0);
   const [mobileShowSettings, setMobileShowSettings] = useState(false);
   const previewRef = useRef<HTMLDivElement>(null);
 
   const charCount = useMemo(() => extractChineseChars(text).length, [text]);
+
+  useEffect(() => { setCurrentCharIndex(0); }, [text]);
 
   const handleExport = useCallback(async () => {
     if (!previewRef.current) return;
@@ -64,7 +69,7 @@ function App() {
             border: 'none',
           }}
         >
-          {mobileShowSettings ? 'Preview' : 'Settings'}
+          {mobileShowSettings ? (mode === 'learn' ? 'Learn' : 'Preview') : 'Settings'}
         </button>
       </div>
 
@@ -79,6 +84,8 @@ function App() {
         style={{ borderColor: 'var(--ink-border)' }}
       >
         <SettingsPanel
+          mode={mode}
+          onModeChange={setMode}
           text={text}
           onTextChange={setText}
           traceCells={traceCells}
@@ -117,17 +124,27 @@ function App() {
           `,
         }}
       >
-        <WorksheetPreview
-          ref={previewRef}
-          text={text}
-          traceCells={traceCells}
-          blankCells={blankCells}
-          cellSize={cellSize}
-          showPinyin={showPinyin}
-          showStrokeOrder={showStrokeOrder}
-          maxStrokeFrames={maxStrokeFrames}
-          gridType={gridType}
-        />
+        {mode === 'learn' ? (
+          <LearnMode
+            text={text}
+            currentCharIndex={currentCharIndex}
+            onCharIndexChange={setCurrentCharIndex}
+            showPinyin={showPinyin}
+            gridType={gridType}
+          />
+        ) : (
+          <WorksheetPreview
+            ref={previewRef}
+            text={text}
+            traceCells={traceCells}
+            blankCells={blankCells}
+            cellSize={cellSize}
+            showPinyin={showPinyin}
+            showStrokeOrder={showStrokeOrder}
+            maxStrokeFrames={maxStrokeFrames}
+            gridType={gridType}
+          />
+        )}
       </main>
     </div>
   );
