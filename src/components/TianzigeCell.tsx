@@ -56,53 +56,51 @@ function TianzigeCellBase({ size, char, mode, showPinyin, pinyin, gridType = 'mi
           height={1016}
           fill="none"
           stroke={borderColor}
-          strokeWidth={8}
+          strokeWidth={16}
         />
 
         {/* Horizontal center line (dashed) */}
         <line
-          x1={4}
+          x1={1}
           y1={512}
-          x2={1020}
+          x2={1023}
           y2={512}
           stroke={guideColor}
-          strokeWidth={4}
-          strokeDasharray="20 15"
+          strokeWidth={10}
+          strokeDasharray="30 20"
         />
 
         {/* Vertical center line (dashed) */}
         <line
           x1={512}
-          y1={4}
+          y1={1}
           x2={512}
-          y2={1020}
+          y2={1023}
           stroke={guideColor}
-          strokeWidth={4}
-          strokeDasharray="20 15"
+          strokeWidth={10}
+          strokeDasharray="30 20"
         />
 
         {/* Diagonal lines (only for mizige) */}
         {gridType !== 'tianzige' && (
           <>
             <line
-              x1={4}
-              y1={4}
-              x2={1020}
-              y2={1020}
+              x1={1}
+              y1={1}
+              x2={1023}
+              y2={1023}
               stroke={guideColor}
-              strokeWidth={3}
-              strokeDasharray="20 20"
-              opacity={0.5}
+              strokeWidth={8}
+              strokeDasharray="30 20"
             />
             <line
-              x1={1020}
-              y1={4}
-              x2={4}
-              y2={1020}
+              x1={1023}
+              y1={1}
+              x2={1}
+              y2={1023}
               stroke={guideColor}
-              strokeWidth={3}
-              strokeDasharray="20 20"
-              opacity={0.5}
+              strokeWidth={8}
+              strokeDasharray="30 20"
             />
           </>
         )}
