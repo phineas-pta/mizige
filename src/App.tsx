@@ -18,7 +18,6 @@ function App() {
   const [isExporting, setIsExporting] = useState(false);
   const [mode, setMode] = useState<'worksheet' | 'learn'>('worksheet');
   const [currentCharIndex, setCurrentCharIndex] = useState(0);
-  const [mobileShowSettings, setMobileShowSettings] = useState(false);
   const previewRef = useRef<HTMLDivElement>(null);
 
   const charCount = useMemo(() => extractChineseChars(text).length, [text]);
@@ -37,51 +36,28 @@ function App() {
     }
   }, [paperSize]);
 
-  return (
-    <div className="flex flex-col lg:flex-row h-screen overflow-hidden">
-      {/* Mobile header */}
-      <div
-        className="lg:hidden flex items-center justify-between p-3"
-        style={{ background: 'var(--ink-surface)', borderBottom: '1px solid var(--ink-border)' }}
-      >
-        <div className="flex items-center gap-2">
-          <div
-            className="w-8 h-8 rounded-md flex items-center justify-center text-sm"
-            style={{
-              background: 'linear-gradient(135deg, var(--vermillion), var(--gold-accent))',
-              fontFamily: "'LXGW WenKai', serif",
-              fontWeight: 900,
-              color: 'white',
-            }}
-          >
-            米
-          </div>
-          <span className="font-semibold text-sm" style={{ fontFamily: "'LXGW WenKai', serif" }}>
-            米字格
-          </span>
-        </div>
-        <button
-          onClick={() => setMobileShowSettings(!mobileShowSettings)}
-          className="px-3 py-1.5 rounded-md text-xs font-medium cursor-pointer"
-          style={{
-            background: 'var(--ink-border)',
-            color: 'var(--text-primary)',
-            border: 'none',
-          }}
-        >
-          {mobileShowSettings ? (mode === 'learn' ? 'Learn' : 'Preview') : 'Settings'}
-        </button>
-      </div>
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
-      {/* Settings sidebar */}
+  return (
+    <div className="relative h-screen overflow-hidden">
+      {/* Backdrop overlay when sidebar open on mobile */}
+      {sidebarOpen && (
+        <button
+          className="fixed inset-0 z-20 lg:hidden cursor-default"
+          style={{ background: 'rgba(0,0,0,0.5)', border: 'none' }}
+          onClick={() => setSidebarOpen(false)}
+          aria-label="Close settings"
+        />
+      )}
+
+      {/* Slide-in sidebar */}
       <div
-        className={`
-          ${mobileShowSettings ? 'block' : 'hidden'} lg:block
-          w-full lg:w-80 xl:w-88 flex-shrink-0
-          lg:border-r
-          overflow-y-auto
-        `}
-        style={{ borderColor: 'var(--ink-border)' }}
+        className="fixed top-0 left-0 z-30 h-full w-80 shrink-0"
+        style={{
+          transform: sidebarOpen ? 'translateX(0)' : 'translateX(-100%)',
+          transition: 'transform 0.3s ease',
+          borderRight: '1px solid var(--ink-border)',
+        }}
       >
         <SettingsPanel
           mode={mode}
@@ -107,16 +83,45 @@ function App() {
           onExport={handleExport}
           isExporting={isExporting}
           charCount={charCount}
+          onClose={() => setSidebarOpen(false)}
         />
       </div>
 
-      {/* Preview area */}
-      <main
-        className={`
-          ${mobileShowSettings ? 'hidden' : 'flex'} lg:flex
-          flex-1 overflow-auto items-start justify-center p-6 lg:p-10
-        `}
+      {/* Toggle button */}
+      <button
+        onClick={() => setSidebarOpen(!sidebarOpen)}
+        className="fixed z-40 flex items-center justify-center w-8 h-8 rounded-r-lg cursor-pointer"
         style={{
+          top: 16,
+          left: sidebarOpen ? 'calc(20rem - 1px)' : 0,
+          transition: 'left 0.3s ease',
+          background: 'var(--ink-surface)',
+          border: '1px solid var(--ink-border)',
+          borderLeft: sidebarOpen ? 'none' : '1px solid var(--ink-border)',
+          color: 'var(--text-secondary)',
+        }}
+        title={sidebarOpen ? 'Close settings' : 'Open settings'}
+      >
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 14 14"
+          fill="none"
+          style={{
+            transform: sidebarOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+            transition: 'transform 0.3s ease',
+          }}
+        >
+          <path d="M5 2l5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </button>
+
+      {/* Main content area */}
+      <main
+        className="h-full overflow-y-auto overflow-x-hidden flex items-start justify-center p-6 lg:p-10"
+        style={{
+          marginLeft: sidebarOpen ? '20rem' : 0,
+          transition: 'margin-left 0.3s ease',
           background: 'var(--ink-dark)',
           backgroundImage: `
             radial-gradient(ellipse at 30% 20%, rgba(201, 168, 76, 0.03) 0%, transparent 50%),
@@ -131,6 +136,7 @@ function App() {
             onCharIndexChange={setCurrentCharIndex}
             showPinyin={showPinyin}
             gridType={gridType}
+            sidebarOpen={sidebarOpen}
           />
         ) : (
           <WorksheetPreview

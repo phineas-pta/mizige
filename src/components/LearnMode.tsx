@@ -10,6 +10,16 @@ interface LearnModeProps {
   onCharIndexChange: (i: number) => void;
   showPinyin: boolean;
   gridType: 'mizige' | 'tianzige';
+  sidebarOpen: boolean;
+}
+
+function computeCanvasSize(sidebarOpen: boolean): number {
+  const sidebarWidth = sidebarOpen ? 320 : 0;
+  const padding = 80; // p-6/p-10 on main + px-6 on container
+  const overhead = 220; // pinyin + stroke info + replay + controls + gaps
+  const availW = window.innerWidth - sidebarWidth - padding;
+  const availH = window.innerHeight - overhead;
+  return Math.max(200, Math.min(560, Math.floor(Math.min(availW, availH))));
 }
 
 export function LearnMode({
@@ -18,10 +28,28 @@ export function LearnMode({
   onCharIndexChange,
   showPinyin,
   gridType,
+  sidebarOpen,
 }: LearnModeProps) {
   const [availableChars, setAvailableChars] = useState<string[]>([]);
   const [isComplete, setIsComplete] = useState(false);
   const [strokeCounts, setStrokeCounts] = useState<Record<string, number>>({});
+  const [canvasSize, setCanvasSize] = useState(() => computeCanvasSize(sidebarOpen));
+
+  // Recompute on window resize
+  useEffect(() => {
+    const onResize = () => setCanvasSize(computeCanvasSize(sidebarOpen));
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, [sidebarOpen]);
+
+  // Recompute when sidebar toggles
+  useEffect(() => {
+    // Small delay to let the sidebar transition finish (300ms)
+    const timer = setTimeout(() => {
+      setCanvasSize(computeCanvasSize(sidebarOpen));
+    }, 320);
+    return () => clearTimeout(timer);
+  }, [sidebarOpen]);
 
   const allChars = useMemo(() => extractChineseChars(text), [text]);
 
@@ -72,7 +100,7 @@ export function LearnMode({
   // Empty state
   if (availableChars.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-full gap-4">
+      <div className="flex flex-col items-center justify-center w-full h-full gap-4">
         <div
           style={{
             fontFamily: "'LXGW WenKai', serif",
@@ -92,7 +120,7 @@ export function LearnMode({
   // Complete state
   if (isComplete) {
     return (
-      <div className="flex flex-col items-center justify-center h-full gap-4">
+      <div className="flex flex-col items-center justify-center w-full h-full gap-4">
         <div
           style={{
             fontSize: 64,
@@ -126,7 +154,7 @@ export function LearnMode({
 
   // Normal state
   return (
-    <div className="flex flex-col items-center justify-center h-full gap-6">
+    <div className="flex flex-col items-center justify-center w-full h-full gap-6">
       <CharacterCard
         key={currentChar}
         char={currentChar}
@@ -134,6 +162,7 @@ export function LearnMode({
         showPinyin={showPinyin}
         gridType={gridType}
         strokeCount={currentStrokeCount}
+        size={canvasSize}
         onQuizComplete={handleQuizComplete}
       />
       <LearnControls

@@ -22,6 +22,7 @@ interface SettingsPanelProps {
   onExport: () => void;
   isExporting: boolean;
   charCount: number;
+  onClose?: () => void;
 }
 
 function NumberStepper({
@@ -127,6 +128,7 @@ export function SettingsPanel({
   onExport,
   isExporting,
   charCount,
+  onClose,
 }: SettingsPanelProps) {
   return (
     <aside
@@ -146,7 +148,7 @@ export function SettingsPanel({
         >
           米
         </div>
-        <div>
+        <div className="flex-1">
           <h1
             className="text-base font-bold leading-tight"
             style={{ fontFamily: "'LXGW WenKai', serif", color: 'var(--text-primary)' }}
@@ -157,6 +159,18 @@ export function SettingsPanel({
             Practice Sheet Generator
           </p>
         </div>
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="w-7 h-7 rounded flex items-center justify-center cursor-pointer"
+            style={{ color: 'var(--text-muted)', background: 'transparent', border: 'none' }}
+            title="Close settings"
+          >
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <path d="M11 3L3 11M3 3l8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            </svg>
+          </button>
+        )}
       </div>
 
       {/* Mode toggle */}
